@@ -162,7 +162,6 @@ export default class App extends Component {
   };
 
   setText = text => {
-    debugger;
     this.setState({
       ...this.state,
       text
