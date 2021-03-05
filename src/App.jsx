@@ -39,15 +39,6 @@ function getSquareCss(fleet, gameState, row, cell, isMyBoard) {
     css += 'sunk';
   }
   return css;
-  // const isShip = fleet.find(({positions}) => {
-  //   const pos = positions.find(coord => {
-  //     return row === parseInt(coord[1], 10) && cell === parseInt(getNumberFromLetter(coord[0]), 10);
-  //   });
-  //   return pos ? true : false;
-  // });
-  // const shippCss = isShip ? ' is-ship' : '';
-  // css += shippCss;
-  // return css;
 }
 
 function getBorderCss(i, j) {
@@ -67,11 +58,21 @@ function getBorderCss(i, j) {
   return classNames.join(' ');
 }
 
+function isGameFinished(gameState) {
+  let sum = 0;
+  Object.keys(gameState).forEach(key => {
+    if ([STATE.SUNK, STATE.HIT].includes(gameState[key])) {
+      sum++;
+    }
+  });
+  return sum === 17;
+}
+
 const boardSize = 8;
 
-const Board = ({fleet, gameState, selected, isMyBoard, forceUpdateHandler}) => {
+const Board = ({fleet, gameState, selected, isMyBoard, forceUpdateHandler, isPlacement}) => {
   return (
-    <div className="board-container">
+    <div className={'board-container ' + (isMyBoard ? 'is-my-board' : '') + (isPlacement ? ' is-placement' : '')}>
       <div className="board-headline">{isMyBoard ? 'Your grid' : 'Opponents grid'}</div>
       <table className="board">
         <thead>
@@ -92,7 +93,7 @@ const Board = ({fleet, gameState, selected, isMyBoard, forceUpdateHandler}) => {
                 <td key={j} className={getBorderCss(i, j) + ' ' + getSquareCss(fleet, gameState, i, j, isMyBoard)}>
                   <div className="square">
                     <div className={'square-content activated-cell'}>
-                      <button onClick={() => (forceUpdateHandler() && selected(getLetter(j) + i))}>
+                      <button onClick={() => ((!isMyBoard || isPlacement) && forceUpdateHandler() && selected(getLetter(j) + i))}>
                         {getLetter(j) + i}
                       </button>
                     </div>
@@ -149,7 +150,8 @@ export default class App extends Component {
       currentPosition: undefined,
       currentShipIndex: debug ? 10 : 0,
       enemyBoard: initializeEnemyBoard(),
-      myBoard: debug ? initializeOwnBoard() : initializeBoard()
+      myBoard: debug ? initializeOwnBoard() : initializeBoard(),
+      isFinished: false
     };
   }
 
@@ -181,15 +183,45 @@ export default class App extends Component {
   };
 
   shoot = position => {
+    if (this.state.isFinished) {
+      return;
+    }
+    const enemyBoardState = this.state.enemyBoard.state[position];
+    if (enemyBoardState && enemyBoardState !== STATE.SHIP) {
+      this.setText(
+        `You already shoot to this cell. Shoot somewhere else 💣`
+      );
+      return;
+    }
+    const pos = position[0] + '' + (parseInt(position[1], 10) + 1);
     this.setText(
-      `Shoot at ${position}: ${isHit(this.state.enemyBoard, position) ? 'Hit!' : 'Miss!'
+      `Shoot at ${pos}: ${isHit(this.state.enemyBoard, position) ? 'Hit!' : 'Miss!'
       }`
     );
+    const isForYouFinished = isGameFinished(this.state.enemyBoard.state);
+    if (isForYouFinished) {
+      this.setState({
+        ...this.state,
+        isFinished: isForYouFinished,
+        text: `🎉 You won, congratulations 🎉`
+      });
+      return;
+    }
     const counterAttack = getRandomPosition(8, 8);
+    const counterPos = counterAttack[0] + '' + (parseInt(counterAttack[1], 10) + 1);
     this.setText(
-      `Enemy shoots at ${counterAttack}: ${isHit(this.state.myBoard, counterAttack) ? 'Hit!' : 'Miss!'
+      `Enemy shoots at ${counterPos}: ${isHit(this.state.myBoard, counterAttack) ? 'Hit!' : 'Miss!'
       }`
     );
+    const isGameForComputerFinished = isGameFinished(this.state.myBoard.state);
+    if (isGameForComputerFinished) {
+      this.setState({
+        ...this.state,
+        isFinished: isGameForComputerFinished,
+        text: `🏴‍☠️ Opponent won! Try again 🏴‍☠️`
+      });
+      return;
+    }
   };
 
   setStateToRender() {
@@ -203,6 +235,7 @@ export default class App extends Component {
     const {currentPosition, currentShipIndex, myBoard} = this.state;
     const ship = myBoard.fleet[currentShipIndex];
     let text;
+    let useTextFromState = false;
 
     if (ship) {
       if (!!currentPosition) {
@@ -210,8 +243,10 @@ export default class App extends Component {
       } else {
         text = `Select position for ${ship.name}`;
       }
+      useTextFromState = false;
     } else {
       text = `Shoot!`;
+      useTextFromState = !!this.state.text ? true : false;
     }
 
     return (
@@ -224,24 +259,24 @@ export default class App extends Component {
                 <div className="hidden">Ships</div>
               </div>
               <div>
-                <Board forceUpdateHandler={() => this.setStateToRender()} isMyBoard={true} fleet={this.state.myBoard.fleet} gameState={this.state.myBoard.state} selected={ship ? this.setCurrentPosition : this.shoot} />
+                <Board forceUpdateHandler={() => this.setStateToRender()} isMyBoard={true} fleet={this.state.myBoard.fleet} gameState={this.state.myBoard.state} isPlacement={!!ship} selected={ship ? this.setCurrentPosition : this.shoot} />
               </div>
               <div>
                 <div>&nbsp;</div>
               </div>
               <div className="second-board">
-                <Board forceUpdateHandler={() => this.setStateToRender()} isMyBoard={false} fleet={this.state.enemyBoard.fleet} gameState={this.state.enemyBoard.state} selected={ship ? this.setCurrentPosition : this.shoot} />
+                <Board forceUpdateHandler={() => this.setStateToRender()} isMyBoard={false} fleet={this.state.enemyBoard.fleet} gameState={this.state.enemyBoard.state} isPlacement={!!ship} selected={ship ? this.setCurrentPosition : this.shoot} />
               </div>
               <div>
                 <div className="hidden">Ships</div>
               </div>
               <div className="x">
                 <div>
-                  <MessageBox text={text} />
+                  <MessageBox text={useTextFromState ? this.state.text : text} />
                 </div>
-                <div className="interaction-buttons hidden">
-                  <div>New Game</div>
-                  <div>End Game</div>
+                <div className={'interaction-buttons ' + (!this.state.isFinished ? 'hidden' : '')}>
+                  <div onClick={() => window.location.reload()}>New Game</div>
+                  <div onClick={() => window.location.reload()}>End Game</div>
                 </div>
               </div>
             </div>
