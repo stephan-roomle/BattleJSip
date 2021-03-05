@@ -29,8 +29,8 @@ function getNumberFromLetter(letter) {
 function getSquareCss(fleet, gameState, row, cell, isMyBoard) {
   const cellState = gameState[getLetter(cell) + row];
   let css = ' ';
-  if (cellState === STATE.SHIP) {
-    css += 'ship';
+  if (cellState === STATE.SHIP && isMyBoard) {
+    css += 'is-ship';
   } else if (cellState === STATE.HIT) {
     css += 'hit';
   } else if (cellState === STATE.MISS) {
@@ -38,18 +38,16 @@ function getSquareCss(fleet, gameState, row, cell, isMyBoard) {
   } else if (cellState === STATE.SUNK) {
     css += 'sunk';
   }
-  if (!isMyBoard) {
-    return css;
-  }
-  const isShip = fleet.find(({positions}) => {
-    const pos = positions.find(coord => {
-      return row === parseInt(coord[1], 10) && cell === parseInt(getNumberFromLetter(coord[0]), 10);
-    });
-    return pos ? true : false;
-  });
-  const shippCss = isShip ? ' is-ship' : '';
-  css += shippCss;
   return css;
+  // const isShip = fleet.find(({positions}) => {
+  //   const pos = positions.find(coord => {
+  //     return row === parseInt(coord[1], 10) && cell === parseInt(getNumberFromLetter(coord[0]), 10);
+  //   });
+  //   return pos ? true : false;
+  // });
+  // const shippCss = isShip ? ' is-ship' : '';
+  // css += shippCss;
+  // return css;
 }
 
 function getBorderCss(i, j) {
@@ -91,9 +89,9 @@ const Board = ({fleet, gameState, selected, isMyBoard, forceUpdateHandler}) => {
                 <strong>{i + 1}</strong>
               </td>
               {getSequence(boardSize).map(j => (
-                <td key={j} className={getBorderCss(i, j)}>
+                <td key={j} className={getBorderCss(i, j) + ' ' + getSquareCss(fleet, gameState, i, j, isMyBoard)}>
                   <div className="square">
-                    <div className={'square-content activated-cell ' + getSquareCss(fleet, gameState, i, j, isMyBoard)}>
+                    <div className={'square-content activated-cell'}>
                       <button onClick={() => (forceUpdateHandler() && selected(getLetter(j) + i))}>
                         {getLetter(j) + i}
                       </button>

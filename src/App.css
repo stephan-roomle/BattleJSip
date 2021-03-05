@@ -62,7 +62,7 @@ body {
   border: 0;
   cursor: pointer;
   font-size: 0;
-  background-color: white;
+  background-color: transparent;
 }
 
 .board .activated-cell button:before {
@@ -74,8 +74,9 @@ body {
   transform: translate(-0.5rem, -0.8rem);
 }
 
-.board .hit button {
+.board .hit {
   background-color: lightcoral;
+  border-color: lightcoral;
 }
 
 .board .hit button:before {
@@ -83,16 +84,18 @@ body {
   background-color: lightcoral;
 }
 
-.board .water button {
+.board .water {
   background-color: lightblue;
+  border-color: lightblue;
 }
 
 .board .water button:before {
   content: '🌊';
 }
 
-.board .sunk button {
+.board .sunk {
   background-color: black;
+  border-color: black;
 }
 
 .board .sunk button:before {
@@ -168,7 +171,7 @@ body {
   text-transform: uppercase;
 }
 
-.is-ship button {
+.board .is-ship {
   background-color: #dbd0ff;
 }
 
