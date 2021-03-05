@@ -70,7 +70,7 @@ function isGameFinished(gameState) {
 
 const boardSize = 8;
 
-const Board = ({fleet, gameState, selected, isMyBoard, forceUpdateHandler, isPlacement}) => {
+const Board = ({fleet, gameState, selected, isMyBoard, forceUpdateHandler, isPlacement, updateText}) => {
   return (
     <div className={'board-container ' + (isMyBoard ? 'is-my-board' : '') + (isPlacement ? ' is-placement' : '')}>
       <div className="board-headline">{isMyBoard ? 'Your grid' : 'Opponents grid'}</div>
@@ -93,7 +93,7 @@ const Board = ({fleet, gameState, selected, isMyBoard, forceUpdateHandler, isPla
                 <td key={j} className={getBorderCss(i, j) + ' ' + getSquareCss(fleet, gameState, i, j, isMyBoard)}>
                   <div className="square">
                     <div className={'square-content activated-cell'}>
-                      <button onClick={() => (((!isMyBoard && !isPlacement) || (isPlacement && isMyBoard)) && forceUpdateHandler() && selected(getLetter(j) + i))}>
+                      <button onClick={() => ((isPlacement && !isMyBoard) ? updateText(`🚨 Can not place ships on your opponents board!! `) : ((!isMyBoard && !isPlacement) || (isPlacement && isMyBoard)) && forceUpdateHandler() && selected(getLetter(j) + i))}>
                         {getLetter(j) + i}
                       </button>
                     </div>
@@ -162,6 +162,7 @@ export default class App extends Component {
   };
 
   setText = text => {
+    debugger;
     this.setState({
       ...this.state,
       text
@@ -169,7 +170,7 @@ export default class App extends Component {
   };
 
   placeMyShip = direction => {
-    const { myBoard, currentPosition, currentShipIndex } = this.state;
+    const {myBoard, currentPosition, currentShipIndex} = this.state;
 
     if (currentPosition) {
       placeShip(myBoard, currentShipIndex, currentPosition, direction);
@@ -195,8 +196,7 @@ export default class App extends Component {
     }
     const pos = position[0] + '' + (parseInt(position[1], 10) + 1);
     this.setText(
-      `Shoot at ${pos}: ${
-        isHit(this.state.enemyBoard, position) ? 'Hit!' : 'Miss!'
+      `Shoot at ${pos}: ${isHit(this.state.enemyBoard, position) ? 'Hit!' : 'Miss!'
       }`
     );
     const isForYouFinished = isGameFinished(this.state.enemyBoard.state);
@@ -211,8 +211,7 @@ export default class App extends Component {
     const counterAttack = getRandomBoardPosition(this.state.myBoard, 8, 8);
     const counterPos = counterAttack[0] + '' + (parseInt(counterAttack[1], 10) + 1);
     this.setText(
-      `Enemy shoots at ${counterPos}: ${
-        isHit(this.state.myBoard, counterAttack) ? 'Hit!' : 'Miss!'
+      `Enemy shoots at ${counterPos}: ${isHit(this.state.myBoard, counterAttack) ? 'Hit!' : 'Miss!'
       }`
     );
     const isGameForComputerFinished = isGameFinished(this.state.myBoard.state);
@@ -245,6 +244,9 @@ export default class App extends Component {
       } else {
         text = `Select position for ${ship.name}`;
       }
+      const suffix = !!this.state.text ? this.state.text : '';
+      text = suffix + '' + text;
+      this.state.text = null;
       useTextFromState = false;
     } else {
       text = `Shoot!`;
@@ -256,33 +258,33 @@ export default class App extends Component {
         {!!currentPosition ? (
           <DirectionSelector selected={this.placeMyShip} />
         ) : (
-          <div className="game-layout">
-            <div>
-              <div className="hidden">Ships</div>
-            </div>
-            <div>
-              <Board forceUpdateHandler={() => this.setStateToRender()} isMyBoard={true} fleet={this.state.myBoard.fleet} gameState={this.state.myBoard.state} isPlacement={!!ship} selected={ship ? this.setCurrentPosition : this.shoot} />
-            </div>
-            <div>
-              <div>&nbsp;</div>
-            </div>
-            <div className="second-board">
-              <Board forceUpdateHandler={() => this.setStateToRender()} isMyBoard={false} fleet={this.state.enemyBoard.fleet} gameState={this.state.enemyBoard.state} isPlacement={!!ship} selected={ship ? this.setCurrentPosition : this.shoot} />
-            </div>
-            <div>
-              <div className="hidden">Ships</div>
-            </div>
-            <div className="x">
+            <div className="game-layout">
               <div>
-                <MessageBox text={useTextFromState ? this.state.text : text} />
+                <div className="hidden">Ships</div>
               </div>
-              <div className={'interaction-buttons ' + (!this.state.isFinished ? 'hidden' : '')}>
-                <div onClick={() => window.location.reload()}>New Game</div>
-                <div onClick={() => window.location.reload()}>End Game</div>
+              <div>
+                <Board forceUpdateHandler={() => this.setStateToRender()} isMyBoard={true} fleet={this.state.myBoard.fleet} gameState={this.state.myBoard.state} isPlacement={!!ship} selected={ship ? this.setCurrentPosition : this.shoot} updateText={this.setText} />
+              </div>
+              <div>
+                <div>&nbsp;</div>
+              </div>
+              <div className="second-board">
+                <Board forceUpdateHandler={() => this.setStateToRender()} isMyBoard={false} fleet={this.state.enemyBoard.fleet} gameState={this.state.enemyBoard.state} isPlacement={!!ship} selected={ship ? this.setCurrentPosition : this.shoot} updateText={this.setText} />
+              </div>
+              <div>
+                <div className="hidden">Ships</div>
+              </div>
+              <div className="x">
+                <div>
+                  <MessageBox text={useTextFromState ? this.state.text : text} />
+                </div>
+                <div className={'interaction-buttons ' + (!this.state.isFinished ? 'hidden' : '')}>
+                  <div onClick={() => window.location.reload()}>New Game</div>
+                  <div onClick={() => window.location.reload()}>End Game</div>
+                </div>
               </div>
             </div>
-          </div>
-        )}
+          )}
       </Fragment>
     );
   }
