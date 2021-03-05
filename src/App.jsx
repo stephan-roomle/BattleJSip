@@ -1,6 +1,6 @@
 import React, {Component, Fragment} from 'react';
 import {
-  getRandomPosition,
+  getRandomBoardPosition,
   initializeOwnBoard,
   initializeEnemyBoard,
   isHit,
@@ -169,7 +169,7 @@ export default class App extends Component {
   };
 
   placeMyShip = direction => {
-    const {myBoard, currentPosition, currentShipIndex} = this.state;
+    const { myBoard, currentPosition, currentShipIndex } = this.state;
 
     if (currentPosition) {
       placeShip(myBoard, currentShipIndex, currentPosition, direction);
@@ -195,7 +195,8 @@ export default class App extends Component {
     }
     const pos = position[0] + '' + (parseInt(position[1], 10) + 1);
     this.setText(
-      `Shoot at ${pos}: ${isHit(this.state.enemyBoard, position) ? 'Hit!' : 'Miss!'
+      `Shoot at ${pos}: ${
+        isHit(this.state.enemyBoard, position) ? 'Hit!' : 'Miss!'
       }`
     );
     const isForYouFinished = isGameFinished(this.state.enemyBoard.state);
@@ -207,10 +208,11 @@ export default class App extends Component {
       });
       return;
     }
-    const counterAttack = getRandomPosition(8, 8);
+    const counterAttack = getRandomBoardPosition(this.state.myBoard, 8, 8);
     const counterPos = counterAttack[0] + '' + (parseInt(counterAttack[1], 10) + 1);
     this.setText(
-      `Enemy shoots at ${counterPos}: ${isHit(this.state.myBoard, counterAttack) ? 'Hit!' : 'Miss!'
+      `Enemy shoots at ${counterPos}: ${
+        isHit(this.state.myBoard, counterAttack) ? 'Hit!' : 'Miss!'
       }`
     );
     const isGameForComputerFinished = isGameFinished(this.state.myBoard.state);
@@ -254,33 +256,33 @@ export default class App extends Component {
         {!!currentPosition ? (
           <DirectionSelector selected={this.placeMyShip} />
         ) : (
-            <div className="game-layout">
+          <div className="game-layout">
+            <div>
+              <div className="hidden">Ships</div>
+            </div>
+            <div>
+              <Board forceUpdateHandler={() => this.setStateToRender()} isMyBoard={true} fleet={this.state.myBoard.fleet} gameState={this.state.myBoard.state} isPlacement={!!ship} selected={ship ? this.setCurrentPosition : this.shoot} />
+            </div>
+            <div>
+              <div>&nbsp;</div>
+            </div>
+            <div className="second-board">
+              <Board forceUpdateHandler={() => this.setStateToRender()} isMyBoard={false} fleet={this.state.enemyBoard.fleet} gameState={this.state.enemyBoard.state} isPlacement={!!ship} selected={ship ? this.setCurrentPosition : this.shoot} />
+            </div>
+            <div>
+              <div className="hidden">Ships</div>
+            </div>
+            <div className="x">
               <div>
-                <div className="hidden">Ships</div>
+                <MessageBox text={useTextFromState ? this.state.text : text} />
               </div>
-              <div>
-                <Board forceUpdateHandler={() => this.setStateToRender()} isMyBoard={true} fleet={this.state.myBoard.fleet} gameState={this.state.myBoard.state} isPlacement={!!ship} selected={ship ? this.setCurrentPosition : this.shoot} />
-              </div>
-              <div>
-                <div>&nbsp;</div>
-              </div>
-              <div className="second-board">
-                <Board forceUpdateHandler={() => this.setStateToRender()} isMyBoard={false} fleet={this.state.enemyBoard.fleet} gameState={this.state.enemyBoard.state} isPlacement={!!ship} selected={ship ? this.setCurrentPosition : this.shoot} />
-              </div>
-              <div>
-                <div className="hidden">Ships</div>
-              </div>
-              <div className="x">
-                <div>
-                  <MessageBox text={useTextFromState ? this.state.text : text} />
-                </div>
-                <div className={'interaction-buttons ' + (!this.state.isFinished ? 'hidden' : '')}>
-                  <div onClick={() => window.location.reload()}>New Game</div>
-                  <div onClick={() => window.location.reload()}>End Game</div>
-                </div>
+              <div className={'interaction-buttons ' + (!this.state.isFinished ? 'hidden' : '')}>
+                <div onClick={() => window.location.reload()}>New Game</div>
+                <div onClick={() => window.location.reload()}>End Game</div>
               </div>
             </div>
-          )}
+          </div>
+        )}
       </Fragment>
     );
   }
