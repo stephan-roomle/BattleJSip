@@ -93,7 +93,7 @@ const Board = ({fleet, gameState, selected, isMyBoard, forceUpdateHandler, isPla
                 <td key={j} className={getBorderCss(i, j) + ' ' + getSquareCss(fleet, gameState, i, j, isMyBoard)}>
                   <div className="square">
                     <div className={'square-content activated-cell'}>
-                      <button onClick={() => ((!isMyBoard || isPlacement) && forceUpdateHandler() && selected(getLetter(j) + i))}>
+                      <button onClick={() => (((!isMyBoard && !isPlacement) || (isPlacement && isMyBoard)) && forceUpdateHandler() && selected(getLetter(j) + i))}>
                         {getLetter(j) + i}
                       </button>
                     </div>
@@ -104,7 +104,7 @@ const Board = ({fleet, gameState, selected, isMyBoard, forceUpdateHandler, isPla
           ))}
         </tbody>
       </table>
-    </div >
+    </div>
   );
 };
 

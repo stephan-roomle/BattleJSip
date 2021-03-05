@@ -197,6 +197,10 @@ body {
   outline: none;
 }
 
+.is-placement button {
+  cursor: default;
+}
+
 .is-my-board.is-placement button {
   cursor: pointer;
 }
