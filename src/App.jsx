@@ -1,4 +1,4 @@
-import React, {Component, Fragment} from 'react';
+import React, { Component, Fragment} from 'react';
 import {
   getRandomBoardPosition,
   initializeOwnBoard,
@@ -12,7 +12,7 @@ import './App.css';
 
 function getSequence(length) {
   return [
-    ...Array.from({length})
+    ...Array.from({ length })
       .fill(0)
       .map((e, i) => i)
   ];
@@ -72,7 +72,13 @@ const boardSize = 8;
 
 const Board = ({fleet, gameState, selected, isMyBoard, forceUpdateHandler, isPlacement, updateText}) => {
   return (
-    <div className={'board-container ' + (isMyBoard ? 'is-my-board' : '') + (isPlacement ? ' is-placement' : '')}>
+    <div
+      className={
+        'board-container ' +
+        (isMyBoard ? 'is-my-board' : '') +
+        (isPlacement ? ' is-placement' : '')
+      }
+    >
       <div className="board-headline">{isMyBoard ? 'Your grid' : 'Opponents grid'}</div>
       <table className="board">
         <thead>
@@ -90,7 +96,14 @@ const Board = ({fleet, gameState, selected, isMyBoard, forceUpdateHandler, isPla
                 <strong>{i + 1}</strong>
               </td>
               {getSequence(boardSize).map(j => (
-                <td key={j} className={getBorderCss(i, j) + ' ' + getSquareCss(fleet, gameState, i, j, isMyBoard)}>
+                <td
+                  key={j}
+                  className={
+                    getBorderCss(i, j) +
+                    ' ' +
+                    getSquareCss(fleet, gameState, i, j, isMyBoard)
+                  }
+                >
                   <div className="square">
                     <div className={'square-content activated-cell'}>
                       <button onClick={() => ((isPlacement && !isMyBoard) ? updateText(`🚨 Can not place ships on your opponents board!! `) : ((!isMyBoard && !isPlacement) || (isPlacement && isMyBoard)) && forceUpdateHandler() && selected(getLetter(j) + i))}>

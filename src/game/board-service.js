@@ -126,6 +126,53 @@ export function getRelativePosition(position, direction) {
   }
 }
 
+export function getTopAndLeft(position) {
+  const splitPosition = position.split('');
+  const character = splitPosition[0];
+  const number = splitPosition[1];
+
+  const top = parseInt(number);
+  const left = character.charCodeAt(0) - 65;
+
+  return {
+    top,
+    left
+  };
+}
+
+export function getShipDirections(board, shipIndex, position, direction) {
+  const ship = board.fleet[shipIndex];
+  const directions = ['left', 'right', 'up', 'down'];
+  const result = [];
+
+  const { top, left } = getTopAndLeft(position);
+
+  const size = 8 - 1;
+  directions.forEach(d => {
+    switch (direction) {
+      case 'right':
+        if (left + ship.size < size) {
+          result.push(d);
+        }
+      case 'left':
+        if (left - ship.size >= 0) {
+          result.push(d);
+        }
+      case 'up':
+        if (top - ship.size >= 0) {
+          result.push(d);
+        }
+      case 'down':
+        if (top + ship.size < size) {
+          result.push(d);
+        }
+      default:
+        throw Error('invalid direction');
+    }
+  });
+  return result;
+}
+
 export function placeShip(board, shipIndex, position, direction) {
   let ship = board.fleet[shipIndex];
 

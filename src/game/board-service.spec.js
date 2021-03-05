@@ -5,22 +5,9 @@ import {
   isHit,
   placeShip,
   STATE,
-  getRandomPosition
+  getRandomPosition,
+  getTopAndLeft
 } from './board-service';
-
-function getTopAndLeft(position) {
-  const splitPosition = position.split('');
-  const character = splitPosition[0];
-  const number = splitPosition[1];
-
-  const top = parseInt(number);
-  const left = character.charCodeAt(0) - 65;
-
-  return {
-    top,
-    left
-  };
-}
 
 describe('the board service', () => {
   it('should get relative position', () => {
